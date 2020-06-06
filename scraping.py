@@ -36,6 +36,10 @@ def generate_id_list_and_degree_id(soup):
             degree_id["Master_and_Doctor"] = a_tag_id
     return (id_list, degree_id)
 
+def generate_target_category_syllabus(soup):
+    target_category_syllabus = []
+    
+
 def scraping_syllabus(url):
     driver = webdriver.Chrome()
     driver.get(url)
@@ -60,7 +64,7 @@ def scraping_syllabus(url):
         is_table_tag = (soup.find_all("table", {"class": "list"}) != [])
         if is_table_tag:
             if target_syllabus == "Bachelor":
-                bachelor_syllabus += generate_current_id_syllabus(soup)
+                bachelor_syllabus += generate_target_category_syllabus(soup)
             elif target_syllabus == "Master_and_Doctor":
-                master_and_doctor_syllabus += generate_current_id_syllabus(soup)
+                master_and_doctor_syllabus += generate_target_category_syllabus(soup)
         switch_to_frame(driver, "frame2")
