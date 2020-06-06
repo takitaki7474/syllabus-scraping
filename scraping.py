@@ -6,6 +6,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+def generate_current_page_html(driver):
+    html = driver.page_source.encode('utf-8')
+    soup = BeautifulSoup(html, 'html.parser')
+    return soup
+    
 def switch_to_frame(driver, frame_name):
     driver.switch_to.default_content()
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.NAME, frame_name)))
