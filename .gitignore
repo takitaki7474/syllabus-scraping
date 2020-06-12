@@ -1,2 +1,4 @@
 notebook/
 __pycache__/
+saved_json/*
+!.gitkeep
