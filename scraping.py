@@ -1,3 +1,5 @@
+import sys
+from selenium import webdriver
 from common import operate_html as op
 from common import save_dict as sd
 
@@ -65,3 +67,22 @@ def make_all_page_syllabus(driver, menu_ids, degree_id):
     syllabus["Bachelor"] = bachelor_syllabus
     syllabus["Master_and_Doctor"] = master_and_doctor_syllabus
     return syllabus
+
+def make_nanzan_syllabus(url, save_path):
+    if not sd.can_save_as_json(save_path):
+        sys.exit()
+
+    driver = webdriver.Chrome()
+    driver.get(url)
+    op.switch_to_frame(driver, "frame2")
+    soup = op.load_html(driver)
+    menu_list = soup.find_all("a")
+    menu_ids = op.extract_html_attr(menu_list, "id")
+    degree_id = note_degree_id(menu_list)
+
+    nanzan_syllabus = make_all_page_syllabus(driver, menu_ids, degree_id)
+
+    time.sleep(3)
+    driver.quit()
+
+    sd.save_as_json(nanzan_syllabus, save_path) 
