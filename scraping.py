@@ -1,5 +1,8 @@
 import time
+import sys
+import os
 
+import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,7 +19,7 @@ def switch_to_frame(driver, frame_name):
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.NAME, frame_name)))
     driver.switch_to.frame(driver.find_element_by_name(frame_name))
 
-def click_elem_id(driver, elem_id):
+def click_elem(driver, elem_id):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, elem_id)))
     driver.find_element_by_id(elem_id).click()
 
@@ -53,10 +56,19 @@ def generate_target_category_syllabus(soup):
         one_subject_syllabus["teacher"] = td_tag_list[5].get_text().replace("\u3000", " ")
         target_category_syllabus.append(one_subject_syllabus)
         one_subject_syllabus = {}
-    print("読込済:  {0}".format(target_category_syllabus[0]["category"]))
+    if len(target_category_syllabus) != 0:
+        print("読込済:  {0}".format(target_category_syllabus[0]["category"]))
     return target_category_syllabus
 
-def scraping_syllabus(url):
+def save_dic_in_json(dic, filepath):
+    with open(filepath, "w") as f:
+        json.dump(dic, f)
+
+def nanzan_syllabus(url, save_path):
+    if not (".json" in os.path.basename(save_path)):
+        print("please save the json format")
+        sys.exit()
+
     driver = webdriver.Chrome()
     driver.get(url)
     switch_to_frame(driver, "frame2")
@@ -73,7 +85,7 @@ def scraping_syllabus(url):
             target_syllabus = "Bachelor" # 学部のシラバスが対象
         elif id == degree_id["Master_and_Doctor"]:
             target_syllabus = "Master_and_Doctor" # 大学院のシラバスが対象
-        click_elem_id(driver, id)
+        click_elem(driver, id)
         switch_to_frame(driver, "public_main")
         time.sleep(5)
         soup = generate_current_page_html(driver)
@@ -86,4 +98,5 @@ def scraping_syllabus(url):
         switch_to_frame(driver, "frame2")
     syllabus["Bachelor"] = bachelor_syllabus
     syllabus["Master_and_Doctor"] = master_and_doctor_syllabus
-    
+
+    save_dic_in_json(syllabus, save_path)
