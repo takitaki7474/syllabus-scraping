@@ -56,7 +56,8 @@ def generate_target_category_syllabus(soup):
         one_subject_syllabus["teacher"] = td_tag_list[5].get_text().replace("\u3000", " ")
         target_category_syllabus.append(one_subject_syllabus)
         one_subject_syllabus = {}
-    print("読込済:  {0}".format(target_category_syllabus[0]["category"]))
+    if len(target_category_syllabus) != 0:
+        print("読込済:  {0}".format(target_category_syllabus[0]["category"]))
     return target_category_syllabus
 
 def save_dic_in_json(dic, filepath):
@@ -64,7 +65,7 @@ def save_dic_in_json(dic, filepath):
         json.dump(dic, f)
 
 def nanzan_syllabus(url, save_path):
-    if !(".json" in os.path.basename(save_path)):
+    if not (".json" in os.path.basename(save_path)):
         print("please save the json format")
         sys.exit()
 
