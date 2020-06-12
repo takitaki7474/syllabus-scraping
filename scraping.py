@@ -1,4 +1,5 @@
 import time
+import sys
 
 import json
 from bs4 import BeautifulSoup
@@ -61,7 +62,7 @@ def save_dic_in_json(dic, filepath):
     with open(filepath, "w") as f:
         json.dump(dic, f)
 
-def scraping_syllabus(url):
+def scraping_syllabus(url, save_path):
     driver = webdriver.Chrome()
     driver.get(url)
     switch_to_frame(driver, "frame2")
@@ -91,3 +92,5 @@ def scraping_syllabus(url):
         switch_to_frame(driver, "frame2")
     syllabus["Bachelor"] = bachelor_syllabus
     syllabus["Master_and_Doctor"] = master_and_doctor_syllabus
+
+    save_dic_in_json(syllabus, save_path)
