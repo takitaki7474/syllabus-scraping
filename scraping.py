@@ -1,5 +1,6 @@
 import time
 
+import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -56,6 +57,10 @@ def generate_target_category_syllabus(soup):
     print("読込済:  {0}".format(target_category_syllabus[0]["category"]))
     return target_category_syllabus
 
+def save_dic_in_json(dic, filepath):
+    with open(filepath, "w") as f:
+        json.dump(dic, f)
+
 def scraping_syllabus(url):
     driver = webdriver.Chrome()
     driver.get(url)
@@ -86,4 +91,3 @@ def scraping_syllabus(url):
         switch_to_frame(driver, "frame2")
     syllabus["Bachelor"] = bachelor_syllabus
     syllabus["Master_and_Doctor"] = master_and_doctor_syllabus
-    
