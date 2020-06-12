@@ -1,102 +1,89 @@
-import time
 import sys
-import os
-
-import json
-from bs4 import BeautifulSoup
+import time
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from common import operate_html as op
+from common import save_dict as sd
 
-def generate_current_page_html(driver):
-    html = driver.page_source.encode('utf-8')
-    soup = BeautifulSoup(html, 'html.parser')
-    return soup
-
-def switch_to_frame(driver, frame_name):
-    driver.switch_to.default_content()
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.NAME, frame_name)))
-    driver.switch_to.frame(driver.find_element_by_name(frame_name))
-
-def click_elem(driver, elem_id):
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, elem_id)))
-    driver.find_element_by_id(elem_id).click()
-
-# id_list: html内に存在するaタグのidのリスト
-# degree_id: テキストが"学部"と"大学院"のaタグのid
-def generate_id_list_and_degree_id(soup):
-    id_list = []
+def note_degree_id(tag_list):
     degree_id = {}
-    a_tag_list = soup.find_all('a')
-    for a_tag in a_tag_list:
-        a_tag_id = a_tag["id"]
-        id_list.append(a_tag_id)
-        a_tag_text = a_tag.get_text()
-        if a_tag_text == "学部":
-            degree_id["Bachelor"] = a_tag_id
-        elif a_tag_text == "大学院":
-            degree_id["Master_and_Doctor"] = a_tag_id
-    return (id_list, degree_id)
+    for tag in tag_list:
+        t = tag.get_text()
+        if t == "学部":
+            degree_id["Bachelor"] = tag["id"]
+        elif t == "大学院":
+            degree_id["Master_and_Doctor"] = tag["id"]
+    return degree_id
 
-def generate_target_category_syllabus(soup):
-    target_category_syllabus = []
-    one_subject_syllabus = {}
-    tr_tag_list = soup.find_all("tr")
-    for tr_tag in tr_tag_list:
-        exists_td_tag = (tr_tag.find_all("td", {"class": "list-odd-left"}) != [])
-        if not exists_td_tag:
+def make_current_page_syllabus(soup, page_count):
+    current_page_syllabus = []
+    subject = {}
+    tr_list = soup.find_all("tr")
+    for tr in tr_list:
+        td_list = tr.find_all("td", {"class": "list-odd-left"})
+        exists_td = (td_list != [])
+        if not exists_td:
             continue
-        td_tag_list = tr_tag.find_all("td", {"class": "list-odd-left"})
-        one_subject_syllabus["category"] = td_tag_list[0].get_text()
-        one_subject_syllabus["semester"] = td_tag_list[1].get_text()
-        one_subject_syllabus["subject_name"] = td_tag_list[2].get_text().replace("\n", "")
-        one_subject_syllabus["class_schedule"] = td_tag_list[3].get_text(",").split(",")
-        one_subject_syllabus["classroom"] = td_tag_list[4].get_text(",").split(",")
-        one_subject_syllabus["teacher"] = td_tag_list[5].get_text().replace("\u3000", " ")
-        target_category_syllabus.append(one_subject_syllabus)
-        one_subject_syllabus = {}
-    if len(target_category_syllabus) != 0:
-        print("読込済:  {0}".format(target_category_syllabus[0]["category"]))
-    return target_category_syllabus
+        subject["category"] = td_list[0].get_text()
+        subject["semester"] = td_list[1].get_text()
+        subject["subject_name"] = td_list[2].get_text().replace("\n", "").replace(" ", "")
+        subject["class_schedule"] = td_list[3].get_text(",").split(",")
+        subject["classroom"] = td_list[4].get_text(",").split(",")
+        subject["teacher"] = td_list[5].get_text().replace("\u3000", " ")
+        current_page_syllabus.append(subject)
+        subject = {}
+    if len(current_page_syllabus) != 0:
+        print("読込済:  {0}  {1}p".format(current_page_syllabus[0]["category"], page_count))
+    return current_page_syllabus
 
-def save_dic_in_json(dic, filepath):
-    with open(filepath, "w") as f:
-        json.dump(dic, f)
-
-def nanzan_syllabus(url, save_path):
-    if not (".json" in os.path.basename(save_path)):
-        print("please save the json format")
-        sys.exit()
-
-    driver = webdriver.Chrome()
-    driver.get(url)
-    switch_to_frame(driver, "frame2")
-    soup = generate_current_page_html(driver)
-    id_list, degree_id = generate_id_list_and_degree_id(soup)
-
+def make_all_page_syllabus(driver, menu_ids, degree_id):
     syllabus = {} # 全学科のシラバス
     bachelor_syllabus = [] # 学部のシラバス
     master_and_doctor_syllabus = [] # 大学院のシラバス
     target_syllabus = "Bachelor" # 生成対象のシラバス
 
-    for id in id_list:
-        if id == degree_id["Bachelor"]:
+    for menu_id in menu_ids:
+        if menu_id == degree_id["Bachelor"]:
             target_syllabus = "Bachelor" # 学部のシラバスが対象
-        elif id == degree_id["Master_and_Doctor"]:
+        elif menu_id == degree_id["Master_and_Doctor"]:
             target_syllabus = "Master_and_Doctor" # 大学院のシラバスが対象
-        click_elem(driver, id)
-        switch_to_frame(driver, "public_main")
-        time.sleep(5)
-        soup = generate_current_page_html(driver)
-        exists_table_tag = (soup.find_all("table", {"class": "list"}) != [])
-        if exists_table_tag:
-            if target_syllabus == "Bachelor":
-                bachelor_syllabus += generate_target_category_syllabus(soup)
-            elif target_syllabus == "Master_and_Doctor":
-                master_and_doctor_syllabus += generate_target_category_syllabus(soup)
-        switch_to_frame(driver, "frame2")
+        op.click_elem_by_id(driver, menu_id)
+        op.switch_to_frame(driver, "public_main")
+        page_count = 1
+        while(1):
+            time.sleep(7)
+            soup = op.load_html(driver)
+            exists_table = (soup.find_all("table", {"class": "list"}) != [])
+            exists_next_page = (soup.find_all("a", {"title": "next page"}) != [])
+            if exists_table:
+                if target_syllabus == "Bachelor":
+                    bachelor_syllabus += make_current_page_syllabus(soup, page_count)
+                elif target_syllabus == "Master_and_Doctor":
+                    master_and_doctor_syllabus += make_current_page_syllabus(soup, page_count)
+            if exists_next_page:
+                page_count += 1
+                op.click_elem_by_xpath(driver, "//a[@title='next page']")
+            else:
+                break
+        op.switch_to_frame(driver, "frame2")
     syllabus["Bachelor"] = bachelor_syllabus
     syllabus["Master_and_Doctor"] = master_and_doctor_syllabus
+    return syllabus
 
-    save_dic_in_json(syllabus, save_path)
+def make_nanzan_syllabus(url, save_path):
+    if not sd.can_save_as_json(save_path):
+        sys.exit()
+
+    driver = webdriver.Chrome()
+    driver.get(url)
+    op.switch_to_frame(driver, "frame2")
+    soup = op.load_html(driver)
+    menu_list = soup.find_all("a")
+    menu_ids = op.extract_html_attr(menu_list, "id")
+    degree_id = note_degree_id(menu_list)
+
+    nanzan_syllabus = make_all_page_syllabus(driver, menu_ids, degree_id)
+
+    time.sleep(3)
+    driver.quit()
+
+    sd.save_as_json(nanzan_syllabus, save_path)
