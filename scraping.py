@@ -1,4 +1,5 @@
 import sys
+import time
 from selenium import webdriver
 from common import operate_html as op
 from common import save_dict as sd
@@ -49,7 +50,7 @@ def make_all_page_syllabus(driver, menu_ids, degree_id):
         op.switch_to_frame(driver, "public_main")
         page_count = 1
         while(1):
-            time.sleep(5)
+            time.sleep(7)
             soup = op.load_html(driver)
             exists_table = (soup.find_all("table", {"class": "list"}) != [])
             exists_next_page = (soup.find_all("a", {"title": "next page"}) != [])
@@ -85,4 +86,4 @@ def make_nanzan_syllabus(url, save_path):
     time.sleep(3)
     driver.quit()
 
-    sd.save_as_json(nanzan_syllabus, save_path) 
+    sd.save_as_json(nanzan_syllabus, save_path)

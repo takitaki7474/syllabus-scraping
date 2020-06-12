@@ -3,7 +3,7 @@ import json
 
 def save_as_json(dic, filepath):
     with open(filepath, "w") as f:
-        json.dump(dic, f)
+        json.dump(dic, f, indent=4, ensure_ascii=False)
 
 def can_save_as_json(save_path):
     can_save = True
