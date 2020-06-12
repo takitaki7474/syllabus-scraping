@@ -1,5 +1,6 @@
 import time
 import sys
+import os
 
 import json
 from bs4 import BeautifulSoup
@@ -63,6 +64,10 @@ def save_dic_in_json(dic, filepath):
         json.dump(dic, f)
 
 def scraping_syllabus(url, save_path):
+    if !(".json" in os.path.basename(save_path)):
+        print("please save the json format")
+        sys.exit()
+
     driver = webdriver.Chrome()
     driver.get(url)
     switch_to_frame(driver, "frame2")
