@@ -19,7 +19,7 @@ def switch_to_frame(driver, frame_name):
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.NAME, frame_name)))
     driver.switch_to.frame(driver.find_element_by_name(frame_name))
 
-def click_elem_id(driver, elem_id):
+def click_elem(driver, elem_id):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, elem_id)))
     driver.find_element_by_id(elem_id).click()
 
@@ -63,7 +63,7 @@ def save_dic_in_json(dic, filepath):
     with open(filepath, "w") as f:
         json.dump(dic, f)
 
-def scraping_syllabus(url, save_path):
+def nanzan_syllabus(url, save_path):
     if !(".json" in os.path.basename(save_path)):
         print("please save the json format")
         sys.exit()
@@ -84,7 +84,7 @@ def scraping_syllabus(url, save_path):
             target_syllabus = "Bachelor" # 学部のシラバスが対象
         elif id == degree_id["Master_and_Doctor"]:
             target_syllabus = "Master_and_Doctor" # 大学院のシラバスが対象
-        click_elem_id(driver, id)
+        click_elem(driver, id)
         switch_to_frame(driver, "public_main")
         time.sleep(5)
         soup = generate_current_page_html(driver)
