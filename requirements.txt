@@ -1,0 +1,4 @@
+###### Requirements without Version Specifiers ######
+beautifulsoup4
+###### Match to browser version ######
+selenium==3.141.0
