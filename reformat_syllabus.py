@@ -57,3 +57,6 @@ if __name__=="__main__":
 
     syllabus = load_syllabus(loadpath)
     reformatted_syllabus = reformat_syllabus(syllabus)
+
+    if sd.can_save_as_json(savepath):
+        sd.save_as_json(reformatted_syllabus, savepath)
