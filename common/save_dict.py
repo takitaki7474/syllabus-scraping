@@ -1,8 +1,8 @@
 import os
 import json
 
-def save_as_json(dic, filepath):
-    with open(filepath, "w") as f:
+def save_as_json(dic, savepath):
+    with open(savepath, "w") as f:
         json.dump(dic, f, indent=4, ensure_ascii=False)
 
 def can_save_as_json(save_path):
